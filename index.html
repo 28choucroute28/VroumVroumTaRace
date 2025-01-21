@@ -3,144 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarQuery API with Dropdown</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>VroomVroomTaRace</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
+        .filter {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
         }
-        .container {
-            max-width: 600px;
-            margin: auto;
+        .filter label {
+            margin-right: 8px;
         }
-        label {
-            display: block;
-            margin-top: 10px;
-        }
-        select, input {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: #fff;
+        .filter button {
+            margin-left: 8px;
+            background-color: red;
+            color: white;
             border: none;
-            border-radius: 5px;
+            padding: 4px 8px;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #results {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f9f9f9;
-            border: 1px solid #ccc;
-        }
-        .result-item {
-            margin-bottom: 15px;
+        .filter button:hover {
+            background-color: darkred;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>CarQuery API with Dropdown</h1>
-        <form id="query-form">
-            <label for="make-select">Select Make</label>
-            <select id="make-select" required>
-                <option value="">Select a Make</option>
-            </select>
-            <label for="model-select">Select Model</label>
-            <select id="model-select" required>
-                <option value="">Select a Model</option>
-            </select>
-            <label for="year">Year (e.g., 1998)</label>
-            <input type="number" id="year" required>
-            <label for="min_power">Min Power (e.g., 200)</label>
-            <input type="number" id="min_power" required>
-            <button type="submit">Search</button>
-        </form>
-        <div id="results"></div>
+    <h1>VroomVroomTaRace</h1>
+    <p>Recherchez et comparez des véhicules avec des filtres dynamiques.</p>
+
+    <form id="searchForm">
+        <label for="makesSelect">Marque:</label>
+        <select id="makesSelect">
+            <option value="">Sélectionner une marque</option>
+        </select>
+
+        <label for="modelsSelect">Modèle:</label>
+        <select id="modelsSelect" disabled>
+            <option value="">Sélectionner un modèle</option>
+        </select>
+
+        <div id="dynamicFilters"></div>
+
+        <label for="filterSelect">Ajouter un filtre:</label>
+        <select id="filterSelect">
+            <option value="">Sélectionner un filtre</option>
+            <option value="year">Année</option>
+            <option value="min_power">Puissance minimale (ch)</option>
+            <option value="body">Type de carrosserie</option>
+            <option value="fuel_type">Type de carburant</option>
+            <option value="seats">Nombre de sièges</option>
+        </select>
+
+        <button type="button" id="addFilterButton">Ajouter</button>
+        <button type="submit">Rechercher</button>
+    </form>
+
+    <div id="results">
+        <h2>Résultats</h2>
+        <ul id="resultsList"></ul>
     </div>
 
     <script>
-        $(document).ready(function () {
-            const baseUrl = "https://www.carqueryapi.com/api/0.3/";
-            const makeSelect = $("#make-select");
-            const modelSelect = $("#model-select");
+        const BASE_URL = "https://www.carqueryapi.com/api/0.3/";
 
-            // Step 1: Load all makes into the "Make" dropdown
-            $.getJSON(baseUrl + "?callback=?", { cmd: "getMakes" }, function (data) {
-                const makes = data.Makes;
-                makes.forEach(make => {
-                    makeSelect.append(
-                        `<option value="${make.make_id}">${make.make_display}</option>`
-                    );
+        const makesSelect = document.getElementById("makesSelect");
+        const modelsSelect = document.getElementById("modelsSelect");
+        const filterSelect = document.getElementById("filterSelect");
+        const addFilterButton = document.getElementById("addFilterButton");
+        const dynamicFilters = document.getElementById("dynamicFilters");
+        const searchForm = document.getElementById("searchForm");
+        const resultsList = document.getElementById("resultsList");
+
+        const filterOptions = {
+            year: generateYears(),
+            min_power: generateMinPower(),
+            body: ["Coupe", "Sedan", "SUV", "Pickup", "Crossover", "Minivan"],
+            fuel_type: ["Essence", "Diesel", "Électrique", "Hybride"],
+            seats: [2, 4, 5, 7],
+        };
+
+        function getMakes() {
+            fetch(`${BASE_URL}?cmd=getMakes`)
+                .then(response => response.json())
+                .then(data => {
+                    data.Makes.forEach(make => {
+                        const option = document.createElement("option");
+                        option.value = make.make_id;
+                        option.textContent = make.make_display;
+                        makesSelect.appendChild(option);
+                    });
                 });
-            });
+        }
 
-            // Step 2: When a make is selected, load models for that make
-            makeSelect.on("change", function () {
-                const selectedMake = $(this).val();
-                modelSelect.empty(); // Clear existing models
-                modelSelect.append(`<option value="">Select a Model</option>`); // Add placeholder
+        function generateYears() {
+            const currentYear = new Date().getFullYear();
+            const years = [];
+            for (let year = currentYear; year >= 1950; year--) {
+                years.push(year);
+            }
+            return years;
+        }
 
-                if (selectedMake) {
-                    $.getJSON(baseUrl + "?callback=?", { cmd: "getModels", make: selectedMake }, function (data) {
-                        const models = data.Models;
-                        models.forEach(model => {
-                            modelSelect.append(
-                                `<option value="${model.model_name}">${model.model_name}</option>`
-                            );
+        function generateMinPower() {
+            return [50, 100, 150, 200, 250, 300, 350, 400];
+        }
+
+        makesSelect.addEventListener("change", () => {
+            modelsSelect.innerHTML = "<option value=''>Sélectionner un modèle</option>";
+            modelsSelect.disabled = !makesSelect.value;
+
+            if (makesSelect.value) {
+                fetch(`${BASE_URL}?cmd=getModels&make=${makesSelect.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.Models.forEach(model => {
+                            const option = document.createElement("option");
+                            option.value = model.model_name;
+                            option.textContent = model.model_name;
+                            modelsSelect.appendChild(option);
                         });
                     });
-                }
-            });
-
-            // Step 3: Submit the form and fetch results based on make, model, year, and min_power
-            $("#query-form").on("submit", function (e) {
-                e.preventDefault();
-
-                const make = makeSelect.val();
-                const model = modelSelect.val();
-                const year = $("#year").val();
-                const minPower = $("#min_power").val();
-
-                if (!make || !model || !year || !minPower) {
-                    alert("Please fill all fields.");
-                    return;
-                }
-
-                const apiUrl = `${baseUrl}?callback=?&cmd=getTrims&make=${make}&model=${model}&year=${year}&min_power=${minPower}`;
-
-                $.getJSON(apiUrl, function (data) {
-                    const trims = data.Trims;
-                    const resultsDiv = $("#results");
-                    resultsDiv.empty(); // Clear previous results
-
-                    if (trims.length > 0) {
-                        trims.forEach(trim => {
-                            const trimInfo = `
-                                <div class="result-item">
-                                    <strong>${trim.model_name} ${trim.model_trim} (${trim.model_year})</strong><br>
-                                    Engine: ${trim.model_engine_cc}cc, ${trim.model_engine_power_ps} PS<br>
-                                    Body: ${trim.model_body}<br>
-                                    Transmission: ${trim.model_transmission_type}<br>
-                                    Drive: ${trim.model_drive}
-                                </div>`;
-                            resultsDiv.append(trimInfo);
-                        });
-                    } else {
-                        resultsDiv.html('<p>No results found.</p>');
-                    }
-                });
-            });
+            }
         });
+
+        addFilterButton.addEventListener("click", () => {
+            const selectedFilter = filterSelect.value;
+
+            if (selectedFilter && !document.getElementById(selectedFilter)) {
+                const container = document.createElement("div");
+                container.classList.add("filter");
+
+                const label = document.createElement("label");
+                label.textContent = `${filterSelect.options[filterSelect.selectedIndex].textContent}:`;
+                label.setAttribute("for", selectedFilter);
+
+                const input = document.createElement("select");
+                input.id = selectedFilter;
+
+                const defaultOption = document.createElement("option");
+                defaultOption.value = "";
+                defaultOption.textContent = `Sélectionner ${label.textContent.toLowerCase()}`;
+                input.appendChild(defaultOption);
+
+                filterOptions[selectedFilter].forEach(optionValue => {
+                    const option = document.createElement("option");
+                    option.value = optionValue;
+                    option.textContent = optionValue;
+                    input.appendChild(option);
+                });
+
+                const removeButton = document.createElement("button");
+                removeButton.textContent = "Supprimer";
+                removeButton.addEventListener("click", () => {
+                    container.remove();
+                });
+
+                container.appendChild(label);
+                container.appendChild(input);
+                container.appendChild(removeButton);
+                dynamicFilters.appendChild(container);
+
+                filterSelect.value = "";
+            } else {
+                alert("Veuillez sélectionner un filtre valide ou un filtre non utilisé !");
+            }
+        });
+
+        searchForm.addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            const make = makesSelect.value;
+            const model = modelsSelect.value;
+
+            let query = `${BASE_URL}?cmd=getTrims`;
+            if (make) query += `&make=${make}`;
+            if (model) query += `&model=${model}`;
+
+            const filterInputs = dynamicFilters.querySelectorAll("select");
+            filterInputs.forEach(input => {
+                if (input.value) {
+                    query += `&${input.id}=${input.value}`;
+                }
+            });
+
+            fetch(query)
+                .then(response => response.json())
+                .then(data => {
+                    resultsList.innerHTML = "";
+                    data.Trims.forEach(trim => {
+                        const li = document.createElement("li");
+                        li.textContent = `${trim.model_make_display} ${trim.model_name} ${trim.model_trim} - ${trim.model_year} (${trim.model_engine_power_ps} ch)`;
+                        resultsList.appendChild(li);
+                    });
+                });
+        });
+
+        getMakes();
     </script>
 </body>
 </html>
