@@ -3,10 +3,10 @@ name: CI for HTML and Docker
 on:
   push:
     branches:
-      - main
+      - trunck 
   pull_request:
     branches:
-      - main
+      - trunck
 
 jobs:
   validate-html:
