@@ -111,6 +111,7 @@ $(document).ready(function () {
                 <table border="1">
                     <tr><th>Feature</th><th>${details1.model_name || "N/A"}</th><th>${details2.model_name || "N/A"}</th></tr>
                     <tr><td>Make</td><td>${details1.make_display || "N/A"} (${details1.make_country || "N/A"})</td><td>${details2.make_display || "N/A"} (${details2.make_country || "N/A"})</td></tr>
+                    <tr><td>Type</td><td>${details1.model_body || "N/A"}</td><td>${details2.model_body || "N/A"}</td></tr>
                     <tr><td>Engine</td><td>${details1.model_engine_cc || "N/A"}cc (${details1.model_engine_l || "N/A"} l), ${details1.model_engine_power_hp || "N/A"} HP, ${details1.model_engine_type || "N/A"} ${details1.model_engine_cyl || "N/A"}</td><td>${details2.model_engine_cc || "N/A"}cc (${details2.model_engine_l || "N/A"} l), ${details2.model_engine_power_hp || "N/A"} HP, ${details2.model_engine_type || "N/A"} ${details2.model_engine_cyl || "N/A"}</td></tr>
                     <tr><td>Torque</td><td>${details1.model_engine_torque_nm || "N/A"} Nm</td><td>${details2.model_engine_torque_nm || "N/A"} Nm</td></tr>
                     <tr><td>Engine Position</td><td>${details1.model_engine_position || "N/A"}</td><td>${details2.model_engine_position || "N/A"}</td></tr>
