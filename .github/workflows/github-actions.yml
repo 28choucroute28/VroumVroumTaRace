@@ -3,50 +3,50 @@ name: CI Workflow
 on:
   push:
     branches:
-      - trunck # Ta branche avec une faute, mais ça fonctionne 😉
+      - main
   pull_request:
     branches:
-      - trunck
+      - main
 
 jobs:
-  lint:
-    name: Lint HTML and JS
+  lint-html:
     runs-on: ubuntu-latest
-
     steps:
-      # Étape 1 : Cloner le dépôt
-      - name: Checkout code
-        uses: actions/checkout@v3
+      # Étape 1: Checkout du code
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      # Étape 2 : Configurer Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      # Étape 2: Configurer Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 18 # Version LTS recommandée de Node.js
+          node-version: '14'  # Utilise la version de Node.js que tu souhaites
 
-      # Étape 3 : Installer les dépendances (ESLint et plugins)
+      # Étape 3: Installer les dépendances
       - name: Install dependencies
-        run: npm install
+        run: npm install  # Installe les dépendances (htmlhint, etc.)
 
-      # Étape 4 : Exécuter ESLint sur index.html
-      - name: Run ESLint
-        run: npm run lint
+      # Étape 4: Exécuter htmlhint sur le fichier index.html
+      - name: Run HTML linting with htmlhint
+        run: npm run lint  # Le script lint est défini dans package.json
 
-  docker-build:
-    name: Build and Test Dockerfile
+  test-javascript:
     runs-on: ubuntu-latest
-
     steps:
-      # Étape 1 : Cloner le dépôt
-      - name: Checkout code
-        uses: actions/checkout@v3
+      # Étape 1: Checkout du code
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-      # Étape 2 : Construire l'image Docker
-      - name: Build Docker Image
-        run: |
-          docker build -t my-app:test .
+      # Étape 2: Configurer Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
 
-      # Étape 3 : Tester l'image Docker
-      - name: Run Docker container
-        run: |
-          docker run --rm my-app:test
+      # Étape 3: Installer les dépendances
+      - name: Install dependencies
+        run: npm install  # Installe les dépendances (par exemple, Jest si utilisé)
+
+      # Étape 4: Exécuter les tests JavaScript
+      - name: Run tests with Jest
+        run: npm run test  # Le script test est défini dans package.json
