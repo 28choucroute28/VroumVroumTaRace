@@ -51,7 +51,7 @@ jobs:
 
       - name: Run Hadolint
         run: |
-          hadolint Dockerfile
+          hadolint dockerfile
 
   build-docker:
     name: Build Docker Image
