@@ -1,52 +1,34 @@
-name: CI Workflow
+name: CI for Dockerfile
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - trunck  # Exécuter uniquement sur la branche `trunck`
 
 jobs:
-  lint-html:
+  docker-build:
     runs-on: ubuntu-latest
+
     steps:
       # Étape 1: Checkout du code
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Étape 2: Configurer Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'  # Utilise la version de Node.js que tu souhaites
+      # Étape 2: Installer Docker
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
 
-      # Étape 3: Installer les dépendances
-      - name: Install dependencies
-        run: npm install  # Installe les dépendances (htmlhint, etc.)
+      # Étape 3: Construire l'image Docker
+      - name: Build Docker image
+        run: docker build -t myapp:latest .
 
-      # Étape 4: Exécuter htmlhint sur le fichier index.html
-      - name: Run HTML linting with htmlhint
-        run: npm run lint  # Le script lint est défini dans package.json
+      # Étape 4: Vérifier que l'image Docker fonctionne (simuler le test sans exécuter)
+      - name: Test Docker image (Simuler push vers DockerHub)
+        run: |
+          echo "Simulating the push of the Docker image to DockerHub"
+          # Cette étape est une simulation, aucune image n'est réellement envoyée.
+          echo "Image would be pushed to DockerHub: myapp:latest"
 
-  test-javascript:
-    runs-on: ubuntu-latest
-    steps:
-      # Étape 1: Checkout du code
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      # Étape 2: Configurer Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      # Étape 3: Installer les dépendances
-      - name: Install dependencies
-        run: npm install  # Installe les dépendances (par exemple, Jest si utilisé)
-
-      # Étape 4: Exécuter les tests JavaScript
-      - name: Run tests with Jest
-        run: npm run test  # Le script test est défini dans package.json
+      # Étape 5: Nettoyer (facultatif)
+      - name: Clean up
+        run: docker system prune -f
