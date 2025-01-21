@@ -3,201 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VroomVroomTaRace</title>
+    <title>CarQuery API with Dropdown</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .filter {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .filter label {
-            margin-right: 8px;
-        }
-        .filter button {
-            margin-left: 8px;
-            background-color: red;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            cursor: pointer;
-        }
-        .filter button:hover {
-            background-color: darkred;
-        }
+        /* Styles are kept the same */
     </style>
 </head>
 <body>
-    <h1>VroomVroomTaRace</h1>
-    <p>Recherchez et comparez des véhicules avec des filtres dynamiques.</p>
+    <div class="container">
+        <h1>CarQuery API with Dropdown</h1>
+        <form id="query-form">
+            <label for="make-select">Select Make</label>
+            <select id="make-select" required>
+                <option value="">Select a Make</option>
+            </select>
 
-    <form id="searchForm">
-        <label for="makesSelect">Marque:</label>
-        <select id="makesSelect">
-            <option value="">Sélectionner une marque</option>
-        </select>
+            <label for="model-select">Select Model</label>
+            <select id="model-select" required>
+                <option value="">Select a Model</option>
+            </select>
 
-        <label for="modelsSelect">Modèle:</label>
-        <select id="modelsSelect" disabled>
-            <option value="">Sélectionner un modèle</option>
-        </select>
+            <label for="year-select">Select Year</label>
+            <select id="year-select" required>
+                <option value="">Select a Year</option>
+            </select>
 
-        <div id="dynamicFilters"></div>
+            <button type="submit">Search</button>
+        </form>
 
-        <label for="filterSelect">Ajouter un filtre:</label>
-        <select id="filterSelect">
-            <option value="">Sélectionner un filtre</option>
-            <option value="year">Année</option>
-            <option value="min_power">Puissance minimale (ch)</option>
-            <option value="body">Type de carrosserie</option>
-            <option value="fuel_type">Type de carburant</option>
-            <option value="seats">Nombre de sièges</option>
-        </select>
-
-        <button type="button" id="addFilterButton">Ajouter</button>
-        <button type="submit">Rechercher</button>
-    </form>
-
-    <div id="results">
-        <h2>Résultats</h2>
-        <ul id="resultsList"></ul>
+        <div id="results"></div>
+        <div id="vehicle-details" class="vehicle-details"></div>
     </div>
 
     <script>
-        const BASE_URL = "https://www.carqueryapi.com/api/0.3/";
+        $(document).ready(function () {
+            const baseUrl = "https://www.carqueryapi.com/api/0.3/";
+            const makeSelect = $("#make-select");
+            const modelSelect = $("#model-select");
+            const yearSelect = $("#year-select");
 
-        const makesSelect = document.getElementById("makesSelect");
-        const modelsSelect = document.getElementById("modelsSelect");
-        const filterSelect = document.getElementById("filterSelect");
-        const addFilterButton = document.getElementById("addFilterButton");
-        const dynamicFilters = document.getElementById("dynamicFilters");
-        const searchForm = document.getElementById("searchForm");
-        const resultsList = document.getElementById("resultsList");
-
-        const filterOptions = {
-            year: generateYears(),
-            min_power: generateMinPower(),
-            body: ["Coupe", "Sedan", "SUV", "Pickup", "Crossover", "Minivan"],
-            fuel_type: ["Essence", "Diesel", "Électrique", "Hybride"],
-            seats: [2, 4, 5, 7],
-        };
-
-        function getMakes() {
-            fetch(`${BASE_URL}?cmd=getMakes`)
-                .then(response => response.json())
-                .then(data => {
-                    data.Makes.forEach(make => {
-                        const option = document.createElement("option");
-                        option.value = make.make_id;
-                        option.textContent = make.make_display;
-                        makesSelect.appendChild(option);
-                    });
+            // Load all makes into the "Make" dropdown
+            $.getJSON(baseUrl + "?callback=?", { cmd: "getMakes" }, function (data) {
+                const makes = data.Makes;
+                makes.forEach(make => {
+                    makeSelect.append(
+                        `<option value="${make.make_id}">${make.make_display}</option>`
+                    );
                 });
-        }
+            });
 
-        function generateYears() {
-            const currentYear = new Date().getFullYear();
-            const years = [];
-            for (let year = currentYear; year >= 1950; year--) {
-                years.push(year);
-            }
-            return years;
-        }
+            // Load models for the selected make
+            makeSelect.on("change", function () {
+                const selectedMake = $(this).val();
+                modelSelect.empty();
+                modelSelect.append(`<option value="">Select a Model</option>`);
+                yearSelect.empty();
+                yearSelect.append(`<option value="">Select a Year</option>`);
 
-        function generateMinPower() {
-            return [50, 100, 150, 200, 250, 300, 350, 400];
-        }
-
-        makesSelect.addEventListener("change", () => {
-            modelsSelect.innerHTML = "<option value=''>Sélectionner un modèle</option>";
-            modelsSelect.disabled = !makesSelect.value;
-
-            if (makesSelect.value) {
-                fetch(`${BASE_URL}?cmd=getModels&make=${makesSelect.value}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.Models.forEach(model => {
-                            const option = document.createElement("option");
-                            option.value = model.model_name;
-                            option.textContent = model.model_name;
-                            modelsSelect.appendChild(option);
+                if (selectedMake) {
+                    $.getJSON(baseUrl + "?callback=?", { cmd: "getModels", make: selectedMake }, function (data) {
+                        const models = data.Models;
+                        models.forEach(model => {
+                            modelSelect.append(
+                                `<option value="${model.model_name}">${model.model_name}</option>`
+                            );
                         });
                     });
-            }
-        });
-
-        addFilterButton.addEventListener("click", () => {
-            const selectedFilter = filterSelect.value;
-
-            if (selectedFilter && !document.getElementById(selectedFilter)) {
-                const container = document.createElement("div");
-                container.classList.add("filter");
-
-                const label = document.createElement("label");
-                label.textContent = `${filterSelect.options[filterSelect.selectedIndex].textContent}:`;
-                label.setAttribute("for", selectedFilter);
-
-                const input = document.createElement("select");
-                input.id = selectedFilter;
-
-                const defaultOption = document.createElement("option");
-                defaultOption.value = "";
-                defaultOption.textContent = `Sélectionner ${label.textContent.toLowerCase()}`;
-                input.appendChild(defaultOption);
-
-                filterOptions[selectedFilter].forEach(optionValue => {
-                    const option = document.createElement("option");
-                    option.value = optionValue;
-                    option.textContent = optionValue;
-                    input.appendChild(option);
-                });
-
-                const removeButton = document.createElement("button");
-                removeButton.textContent = "Supprimer";
-                removeButton.addEventListener("click", () => {
-                    container.remove();
-                });
-
-                container.appendChild(label);
-                container.appendChild(input);
-                container.appendChild(removeButton);
-                dynamicFilters.appendChild(container);
-
-                filterSelect.value = "";
-            } else {
-                alert("Veuillez sélectionner un filtre valide ou un filtre non utilisé !");
-            }
-        });
-
-        searchForm.addEventListener("submit", (event) => {
-            event.preventDefault();
-
-            const make = makesSelect.value;
-            const model = modelsSelect.value;
-
-            let query = `${BASE_URL}?cmd=getTrims`;
-            if (make) query += `&make=${make}`;
-            if (model) query += `&model=${model}`;
-
-            const filterInputs = dynamicFilters.querySelectorAll("select");
-            filterInputs.forEach(input => {
-                if (input.value) {
-                    query += `&${input.id}=${input.value}`;
                 }
             });
 
-            fetch(query)
-                .then(response => response.json())
-                .then(data => {
-                    resultsList.innerHTML = "";
-                    data.Trims.forEach(trim => {
-                        const li = document.createElement("li");
-                        li.textContent = `${trim.model_make_display} ${trim.model_name} ${trim.model_trim} - ${trim.model_year} (${trim.model_engine_power_ps} ch)`;
-                        resultsList.appendChild(li);
-                    });
-                });
-        });
+            // Load years for the selected model
+            modelSelect.on("change", function () {
+                const selectedMake = makeSelect.val();
+                const selectedModel = $(this).val();
+                yearSelect.empty();
+                yearSelect.append(`<option value="">Select a Year</option>`);
 
-        getMakes();
+                if (selectedMake && selectedModel) {
+                    $.getJSON(baseUrl + "?callback=?", { cmd: "getTrims", make: selectedMake, model: selectedModel }, function (data) {
+                        const trims = data.Trims;
+                        const years = new Set();
+
+                        trims.forEach(trim => {
+                            years.add(trim.model_year);
+                        });
+
+                        Array.from(years).sort((a, b) => b - a).forEach(year => {
+                            yearSelect.append(
+                                `<option value="${year}">${year}</option>`
+                            );
+                        });
+                    });
+                }
+            });
+
+            // Submit the form and fetch results
+            $("#query-form").on("submit", function (e) {
+                e.preventDefault();
+
+                const make = makeSelect.val();
+                const model = modelSelect.val();
+                const year = yearSelect.val();
+
+                if (!make || !model || !year ) {
+                    alert("Please fill all fields.");
+                    return;
+                }
+
+                const apiUrl = `${baseUrl}?callback=?&cmd=getTrims&make=${make}&model=${model}&year=${year}`;
+
+                $.getJSON(apiUrl, function (data) {
+                    const trims = data.Trims;
+                    const resultsDiv = $("#results");
+                    resultsDiv.empty();
+
+                    if (trims.length > 0) {
+                        trims.forEach(trim => {
+                            const trimInfo = `
+                                <div class="result-item">
+                                    <strong>${trim.model_name} ${trim.model_trim} (${trim.model_year})</strong><br>
+                                    Model ID: ${trim.model_id}<br>
+                                    Engine: ${trim.model_engine_cc}cc, ${trim.model_engine_power_ps} PS<br>
+                                    Body: ${trim.model_body}<br>
+                                    Transmission: ${trim.model_transmission_type}<br>
+                                    Drive: ${trim.model_drive}<br>
+                                    <button class="view-details" data-make="${make}" data-model="${model}" data-year="${year}" data-trim-id="${trim.model_id}">View Details</button>
+                                </div>`;
+                            resultsDiv.append(trimInfo);
+                        });
+                    } else {
+                        resultsDiv.html('<p>No results found.</p>');
+                    }
+                });
+            });
+            // View more details of selected trim
+            $(document).on("click", ".view-details", function () {
+                const trimId = $(this).data("trim-id");
+
+                if (!trimId) {
+                    console.log("Trim ID is missing!");
+                    return;
+                }
+
+                // Nouvelle URL avec `cmd=getModel` pour utiliser le `model_id`
+                const apiUrl = `${baseUrl}?callback=?&cmd=getModel&model=${trimId}`;
+
+                // Récupération des détails du modèle via l'API
+                $.getJSON(apiUrl, function (data) {
+                    const modelDetails = data[0]; // Les détails du modèle sont dans le premier objet de la réponse
+
+                    if (modelDetails) {
+                        const detailsDiv = $("#vehicle-details");
+                        detailsDiv.empty();
+
+                        // Affichage des informations détaillées du modèle
+                        detailsDiv.html(`
+                            <h3>Vehicle Details</h3>
+                            <strong>${modelDetails.model_name} , ${modelDetails.model_trim} (${modelDetails.model_year})</strong><br>
+                            <strong>Make:</strong> ${modelDetails.make_display} ( ${modelDetails.make_country} )<br>
+                            <strong>Engine:</strong> ${modelDetails.model_engine_cc}cc (${modelDetails.model_engine_l} l), ${modelDetails.model_engine_power_hp} HP, ${modelDetails.model_engine_type} ${modelDetails.model_engine_cyl}<br>
+                            <strong>Torque:</strong> ${modelDetails.model_engine_torque_nm} Nm<br>
+                            <strong>Engine position:</strong> ${modelDetails.model_engine_position} <br>
+                            <strong>Transmission:</strong> ${modelDetails.model_transmission_type}<br>
+                            <strong>Drive:</strong> ${modelDetails.model_drive}<br>
+                            <strong>Top Speed:</strong> ${modelDetails.model_top_speed_kph} km/h<br>
+                            <strong>0 - 100 km/h:</strong> ${modelDetails.model_0_to_100_kph} s<br>
+                            <strong>Fuel Type:</strong> ${modelDetails.model_engine_fuel}<br>
+                            <strong>Fuel Efficiency:</strong><br>
+                            - Highway: ${modelDetails.model_lkm_hwy} l/100km<br>
+                            - City: ${modelDetails.model_lkm_city} l/100km<br>
+                            - Mixed: ${modelDetails.model_lkm_mixed} l/100km<br>
+                            <strong>Dimensions:</strong><br>
+                            - Length: ${modelDetails.model_length_mm} cm<br>
+                            - Width: ${modelDetails.model_width_mm} cm<br>
+                            - Height: ${modelDetails.model_height_mm} cm<br>
+                            <strong>Weight:</strong> ${modelDetails.model_weight_kg} kg<br>
+                            <strong>Fuel Capacity:</strong> ${modelDetails.model_fuel_cap_l} L<br>
+                        `);
+                    } else {
+                        $("#vehicle-details").html('<p>No details available for this model.</p>');
+                    }
+                }).fail(function () {
+                    const detailsDiv = $("#vehicle-details");
+                    detailsDiv.empty();
+                    detailsDiv.html('<p>Error fetching details for this model.</p>');
+                });
+            });
+
+
+        });
     </script>
 </body>
 </html>
+
