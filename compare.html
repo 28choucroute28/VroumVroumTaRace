@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Vehicles</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .container {
+            display: flex;
+            justify-content: space-around;
+        }
+        .compare-section {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Compare Vehicles</h1>
+    <div class="container">
+        <div class="selection">
+            <h2>Vehicle 1</h2>
+            <form class="query-form" id="form-1">
+                <label for="make-1">Select Make</label>
+                <select id="make-1" required></select>
+                
+                <label for="model-1">Select Model</label>
+                <select id="model-1" required></select>
+                
+                <label for="year-1">Select Year</label>
+                <select id="year-1" required></select>
+            </form>
+        </div>
+        
+        <div class="selection">
+            <h2>Vehicle 2</h2>
+            <form class="query-form" id="form-2">
+                <label for="make-2">Select Make</label>
+                <select id="make-2" required></select>
+                
+                <label for="model-2">Select Model</label>
+                <select id="model-2" required></select>
+                
+                <label for="year-2">Select Year</label>
+                <select id="year-2" required></select>
+            </form>
+        </div>
+    </div>
+    
+    <button id="compare-btn">Compare</button>
+    
+    <div id="comparison-results" class="compare-section"></div>
+    
+    <script src="compare.js"></script>
+</body>
+</html>
