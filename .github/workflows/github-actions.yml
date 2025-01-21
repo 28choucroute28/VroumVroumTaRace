@@ -10,32 +10,32 @@ on:
 
 jobs:
   lint-html:
-    name: Validate HTML and JavaScript
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+  name: Validate HTML and JavaScript
+  runs-on: ubuntu-latest
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Install HTML and JavaScript linters
-        run: |
-          npm install -g htmlhint eslint
+    - name: Install HTML and JavaScript linters
+      run: |
+        npm install -g eslint eslint-plugin-html htmlhint
 
-      - name: Lint HTML
-        run: |
-          htmlhint index.html
-        env:
-          HTMLHINT_RC: |
-            {
-              "attr-lowercase": true,
-              "tag-pair": true,
-              "doctype-first": true,
-              "id-unique": true,
-              "src-not-empty": true
-            }
+    - name: Lint HTML
+      run: |
+        htmlhint index.html
+      env:
+        HTMLHINT_RC: |
+          {
+            "attr-lowercase": true,
+            "tag-pair": true,
+            "doctype-first": true,
+            "id-unique": true,
+            "src-not-empty": true
+          }
 
-      - name: Lint embedded JavaScript in HTML
-        run: |
-          eslint index.html
+    - name: Lint embedded JavaScript in HTML
+      run: |
+        eslint index.html
 
   lint-dockerfile:
     name: Lint Dockerfile
