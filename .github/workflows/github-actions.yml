@@ -1,4 +1,4 @@
-name: CI for Dockerfile
+name: CI for Dockerfile with Playwright Tests
 
 on:
   push:
@@ -6,53 +6,46 @@ on:
       - trunck  # Exécuter uniquement sur la branche `trunck`
 
 jobs:
-  docker-build:
+  docker-build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      # Étape 1: Checkout du code
+      # Checkout du code
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Étape 2: Installer Docker
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+      # Installer Node.js et Playwright
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
 
-      # Étape 3: Construire l'image Docker
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install playwright --save-dev
+
+      # Construire l'image Docker
       - name: Build Docker image
         run: docker build -t myapp:latest .
 
-      # Étape 4: Lancer le conteneur en arrière-plan
+      # Lancer le conteneur
       - name: Run Docker container
         run: |
-          # Démarre le conteneur en arrière-plan
           docker run -d --name myapp-container -p 8080:80 myapp:latest
-          
-          # Attendre quelques secondes pour s'assurer que le serveur démarre
-          sleep 5
-          
-          # Vérifier si le serveur répond à la requête (nous utilisons curl pour tester si le serveur fonctionne)
-          curl --silent --fail http://localhost:8080 || exit 1
-          
-          # Tester l'API : requête pour récupérer des modèles (en supposant qu'une route existe pour cela)
-          curl --silent --fail http://localhost:8080/api/models || exit 1
+          sleep 5  # Attendre que le conteneur soit prêt
 
-          # Tester une autre route API pour un modèle spécifique (exemple avec un modèle particulier)
-          curl --silent --fail http://localhost:8080/api/models/1 || exit 1
-          
-          # Vérifier la réponse JSON, si nécessaire, vérifier que certaines données sont présentes
-          curl --silent --fail http://localhost:8080/api/models | grep "model_name" || exit 1
-          
-          # Arrêter le conteneur
+      # Exécuter les tests Playwright
+      - name: Run Playwright tests
+        run: |
+          npx playwright test test/formInteraction.test.js
+
+      # Arrêter le conteneur après les tests
+      - name: Stop Docker container
+        run: |
           docker stop myapp-container
           docker rm myapp-container
 
-      # Étape 5: Simuler le push vers DockerHub
-      - name: Test Docker image (Simuler push vers DockerHub)
-        run: |
-          echo "Simulating the push of the Docker image to DockerHub"
-          echo "Image would be pushed to DockerHub: myapp:latest"
-
-      # Étape 6: Nettoyer (facultatif)
+      # Nettoyer les ressources Docker
       - name: Clean up
         run: docker system prune -f
