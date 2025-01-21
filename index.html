@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarQuery API Demo</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 1px solid #ccc;
+        }
+        .result-item {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CarQuery API</h1>
+        <form id="query-form">
+            <label for="make">Make (e.g., Volvo)</label>
+            <input type="text" id="make" required>
+            <label for="model">Model (e.g., V70)</label>
+            <input type="text" id="model" required>
+            <label for="year">Year (e.g., 1998)</label>
+            <input type="number" id="year" required>
+            <label for="min_power">Min Power (e.g., 200)</label>
+            <input type="number" id="min_power" required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#query-form').on('submit', function (e) {
+                e.preventDefault();
+
+                // Récupération des valeurs des champs
+                const make = $('#make').val();
+                const model = $('#model').val();
+                const year = $('#year').val();
+                const minPower = $('#min_power').val();
+
+                // Construction de l'URL
+                const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${make}&model=${model}&year=${year}&min_power=${minPower}`;
+
+                // Appel API
+                $.getJSON(apiUrl, function (data) {
+                    const trims = data.Trims;
+                    const resultsDiv = $('#results');
+                    resultsDiv.empty(); // Clear previous results
+
+                    if (trims.length > 0) {
+                        trims.forEach(trim => {
+                            const trimInfo = `
+                                <div class="result-item">
+                                    <strong>${trim.model_name} ${trim.model_trim} (${trim.model_year})</strong><br>
+                                    Engine: ${trim.model_engine_cc}cc, ${trim.model_engine_power_ps} PS<br>
+                                    Body: ${trim.model_body}<br>
+                                    Transmission: ${trim.model_transmission_type}<br>
+                                    Drive: ${trim.model_drive}
+                                </div>`;
+                            resultsDiv.append(trimInfo);
+                        });
+                    } else {
+                        resultsDiv.html('<p>No results found.</p>');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
