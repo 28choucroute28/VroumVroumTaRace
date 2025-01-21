@@ -1,11 +1,13 @@
-import html from "eslint-plugin-html";
+const html = require("eslint-plugin-html");
 
-export default {
-  plugins: [html],
-  overrides: [
-    {
-      files: ["*.html"],
-      processor: "html/html",
+module.exports = [
+  {
+    files: ["*.html"],
+    plugins: {
+      html,
     },
-  ],
-};
+    languageOptions: {
+      parser: html,
+    },
+  },
+];
