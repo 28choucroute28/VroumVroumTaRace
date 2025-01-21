@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarQuery API Demo</title>
+    <title>CarQuery API with Dropdown</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
@@ -18,7 +18,7 @@
             display: block;
             margin-top: 10px;
         }
-        input {
+        select, input {
             width: 100%;
             padding: 8px;
             margin: 5px 0 15px;
@@ -49,12 +49,16 @@
 </head>
 <body>
     <div class="container">
-        <h1>CarQuery API</h1>
+        <h1>CarQuery API with Dropdown</h1>
         <form id="query-form">
-            <label for="make">Make (e.g., Volvo)</label>
-            <input type="text" id="make" required>
-            <label for="model">Model (e.g., V70)</label>
-            <input type="text" id="model" required>
+            <label for="make-select">Select Make</label>
+            <select id="make-select" required>
+                <option value="">Select a Make</option>
+            </select>
+            <label for="model-select">Select Model</label>
+            <select id="model-select" required>
+                <option value="">Select a Model</option>
+            </select>
             <label for="year">Year (e.g., 1998)</label>
             <input type="number" id="year" required>
             <label for="min_power">Min Power (e.g., 200)</label>
@@ -66,22 +70,57 @@
 
     <script>
         $(document).ready(function () {
-            $('#query-form').on('submit', function (e) {
+            const baseUrl = "https://www.carqueryapi.com/api/0.3/";
+            const makeSelect = $("#make-select");
+            const modelSelect = $("#model-select");
+
+            // Step 1: Load all makes into the "Make" dropdown
+            $.getJSON(baseUrl + "?callback=?", { cmd: "getMakes" }, function (data) {
+                const makes = data.Makes;
+                makes.forEach(make => {
+                    makeSelect.append(
+                        `<option value="${make.make_id}">${make.make_display}</option>`
+                    );
+                });
+            });
+
+            // Step 2: When a make is selected, load models for that make
+            makeSelect.on("change", function () {
+                const selectedMake = $(this).val();
+                modelSelect.empty(); // Clear existing models
+                modelSelect.append(`<option value="">Select a Model</option>`); // Add placeholder
+
+                if (selectedMake) {
+                    $.getJSON(baseUrl + "?callback=?", { cmd: "getModels", make: selectedMake }, function (data) {
+                        const models = data.Models;
+                        models.forEach(model => {
+                            modelSelect.append(
+                                `<option value="${model.model_name}">${model.model_name}</option>`
+                            );
+                        });
+                    });
+                }
+            });
+
+            // Step 3: Submit the form and fetch results based on make, model, year, and min_power
+            $("#query-form").on("submit", function (e) {
                 e.preventDefault();
 
-                // Récupération des valeurs des champs
-                const make = $('#make').val();
-                const model = $('#model').val();
-                const year = $('#year').val();
-                const minPower = $('#min_power').val();
+                const make = makeSelect.val();
+                const model = modelSelect.val();
+                const year = $("#year").val();
+                const minPower = $("#min_power").val();
 
-                // Construction de l'URL
-                const apiUrl = `https://www.carqueryapi.com/api/0.3/?callback=?&cmd=getTrims&make=${make}&model=${model}&year=${year}&min_power=${minPower}`;
+                if (!make || !model || !year || !minPower) {
+                    alert("Please fill all fields.");
+                    return;
+                }
 
-                // Appel API
+                const apiUrl = `${baseUrl}?callback=?&cmd=getTrims&make=${make}&model=${model}&year=${year}&min_power=${minPower}`;
+
                 $.getJSON(apiUrl, function (data) {
                     const trims = data.Trims;
-                    const resultsDiv = $('#results');
+                    const resultsDiv = $("#results");
                     resultsDiv.empty(); // Clear previous results
 
                     if (trims.length > 0) {
@@ -105,4 +144,3 @@
     </script>
 </body>
 </html>
-
