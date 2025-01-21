@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "lint": "eslint index.html"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "eslint-plugin-html": "^7.0.0"
+  }
+}
