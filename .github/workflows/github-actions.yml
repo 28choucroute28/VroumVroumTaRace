@@ -1,46 +1,69 @@
-name: CI for HTML and Docker
+name: CI for Dockerfile and HTML/JavaScript
 
 on:
   push:
     branches:
-      - trunck 
+      - trunck
   pull_request:
     branches:
       - trunck
 
 jobs:
-  validate-html:
+  lint-html:
+    name: Validate HTML and JavaScript
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install HTML Validator
+      - name: Install HTML and JavaScript linters
         run: |
-          npm install -g html-validator-cli
+          npm install -g htmlhint eslint
 
-      - name: Validate HTML
+      - name: Lint HTML
         run: |
-          html-validator --file=index.html --verbose
+          htmlhint index.html
+        env:
+          HTMLHINT_RC: |
+            {
+              "attr-lowercase": true,
+              "tag-pair": true,
+              "doctype-first": true,
+              "id-unique": true,
+              "src-not-empty": true
+            }
 
-  lint-docker:
+      - name: Lint embedded JavaScript in HTML
+        run: |
+          eslint index.html --ext .html
+
+  lint-dockerfile:
+    name: Lint Dockerfile
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Lint Dockerfile
-        uses: hadolint/hadolint
-        with:
-          file: Dockerfile
+      - name: Install Hadolint
+        run: |
+          curl -sL https://github.com/hadolint/hadolint/releases/download/v2.12.0/hadolint-Linux-x86_64 -o /usr/local/bin/hadolint
+          chmod +x /usr/local/bin/hadolint
+
+      - name: Run Hadolint
+        run: |
+          hadolint Dockerfile
 
   build-docker:
+    name: Build Docker Image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
       - name: Build Docker Image
         run: |
-          docker build -t my-image:latest .
+          docker build -t my-docker-image:latest .
 
