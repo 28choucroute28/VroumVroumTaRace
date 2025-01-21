@@ -1,35 +1,46 @@
-name: CI for My Website
+name: CI for HTML and Docker
 
 on:
   push:
     branches:
-      - trunck    # Exécuter sur la branche principale
+      - main
   pull_request:
     branches:
-      - trunck    # Exécuter sur les PR vers main
+      - main
 
 jobs:
-  build-and-test:
+  validate-html:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Install HTML Validator
+        run: |
+          npm install -g html-validator-cli
+
+      - name: Validate HTML
+        run: |
+          html-validator --file=index.html --verbose
+
+  lint-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v2
         with:
-          node-version: 18  # Version de Node.js
+          file: Dockerfile
 
-      - name: Install dependencies
-        run: npm install
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Run Linter
-        run: npm run lint  # Commande pour vérifier le style de code
-
-      - name: Run Tests
-        run: npm test  # Commande pour exécuter les tests
-
-      - name: Build Project
-        run: npm run build  # Commande pour compiler ton site, si nécessaire
+      - name: Build Docker Image
+        run: |
+          docker build -t my-image:latest .
 
