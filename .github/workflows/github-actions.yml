@@ -34,6 +34,15 @@ jobs:
           # Vérifier si le serveur répond à la requête (nous utilisons curl pour tester si le serveur fonctionne)
           curl --silent --fail http://localhost:8080 || exit 1
           
+          # Tester l'API : requête pour récupérer des modèles (en supposant qu'une route existe pour cela)
+          curl --silent --fail http://localhost:8080/api/models || exit 1
+
+          # Tester une autre route API pour un modèle spécifique (exemple avec un modèle particulier)
+          curl --silent --fail http://localhost:8080/api/models/1 || exit 1
+          
+          # Vérifier la réponse JSON, si nécessaire, vérifier que certaines données sont présentes
+          curl --silent --fail http://localhost:8080/api/models | grep "model_name" || exit 1
+          
           # Arrêter le conteneur
           docker stop myapp-container
           docker rm myapp-container
