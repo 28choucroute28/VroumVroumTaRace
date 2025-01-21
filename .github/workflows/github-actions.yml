@@ -35,7 +35,7 @@ jobs:
 
       - name: Lint embedded JavaScript in HTML
         run: |
-          eslint index.html --ext .html
+          eslint index.html
 
   lint-dockerfile:
     name: Lint Dockerfile
