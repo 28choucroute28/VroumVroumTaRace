@@ -22,13 +22,28 @@ jobs:
       - name: Build Docker image
         run: docker build -t myapp:latest .
 
-      # Étape 4: Vérifier que l'image Docker fonctionne (simuler le test sans exécuter)
+      # Étape 4: Lancer le conteneur en arrière-plan
+      - name: Run Docker container
+        run: |
+          # Démarre le conteneur en arrière-plan
+          docker run -d --name myapp-container -p 8080:80 myapp:latest
+          
+          # Attendre quelques secondes pour s'assurer que le serveur démarre
+          sleep 5
+          
+          # Vérifier si le serveur répond à la requête (nous utilisons curl pour tester si le serveur fonctionne)
+          curl --silent --fail http://localhost:8080 || exit 1
+          
+          # Arrêter le conteneur
+          docker stop myapp-container
+          docker rm myapp-container
+
+      # Étape 5: Simuler le push vers DockerHub
       - name: Test Docker image (Simuler push vers DockerHub)
         run: |
           echo "Simulating the push of the Docker image to DockerHub"
-          # Cette étape est une simulation, aucune image n'est réellement envoyée.
           echo "Image would be pushed to DockerHub: myapp:latest"
 
-      # Étape 5: Nettoyer (facultatif)
+      # Étape 6: Nettoyer (facultatif)
       - name: Clean up
         run: docker system prune -f
