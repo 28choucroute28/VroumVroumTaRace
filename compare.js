@@ -112,6 +112,24 @@ $(document).ready(function () {
         return Math.min(score, 100);
     }
 
+    const calculateSportyScore = (car) => {
+    let score = 0;
+    // HP
+    if (car.model_engine_power_hp) score += car.model_engine_power_hp * 2;
+    // Torque
+    if (car.model_engine_torque_nm) score += car.model_engine_torque_nm / 10;
+    // Engine capacity (liters)
+    if (car.model_engine_l) score += car.model_engine_l * 50;
+    // Cylinders
+    if (car.model_engine_cyl) score += car.model_engine_cyl * 10;
+    // Acceleration (0-100): lower is better
+    if (car.model_0_to_100_kph) score += Math.max(0, 10 - car.model_0_to_100_kph) * 20;
+    // Drive type
+    if (car.model_drive && car.model_drive.toLowerCase().includes('rwd')) score += 50;
+    else if (car.model_drive && car.model_drive.toLowerCase().includes('fwd')) score += 25;
+    return Math.round(score);
+};
+
     $("#compare-btn").on("click", function () {
         const trim1 = $("#trim-1").val();
         const trim2 = $("#trim-2").val();
@@ -120,13 +138,15 @@ $(document).ready(function () {
             alert("Please select both vehicles completely, including trim.");
             return;
         }
-        
+              
         Promise.all([
             $.getJSON(baseUrl + "?callback=?", { cmd: "getModel", model: trim1 }),
             $.getJSON(baseUrl + "?callback=?", { cmd: "getModel", model: trim2 })
         ]).then(([data1, data2]) => {
             const details1 = data1[0] || {};
             const details2 = data2[0] || {};
+            const score1 = calculateSportyScore(details1);
+            const score2 = calculateSportyScore(details2);
             
             $("#comparison-results").html(`
                 <h2>Comparison Results</h2>
@@ -145,7 +165,8 @@ $(document).ready(function () {
                     <tr><td>Dimensions</td><td>Length: ${details1.model_length_mm || "N/A"} cm, Width: ${details1.model_width_mm || "N/A"} cm, Height: ${details1.model_height_mm || "N/A"} cm</td><td>Length: ${details2.model_length_mm || "N/A"} cm, Width: ${details2.model_width_mm || "N/A"} cm, Height: ${details2.model_height_mm || "N/A"} cm</td></tr>
                     <tr><td>Weight</td><td>${details1.model_weight_kg || "N/A"} kg</td><td>${details2.model_weight_kg || "N/A"} kg</td></tr>
                     <tr><td>Fuel Capacity</td><td>${details1.model_fuel_cap_l || "N/A"} L</td><td>${details2.model_fuel_cap_l || "N/A"} L</td></tr>
-                </table>
+                    <tr><td>Sporty Score</td><td>${score1}</td><td>${score2}</td></tr>
+                    </table>
             `);
         }).catch(() => {
             $("#score-results").html("<p>Error retrieving scoring data.</p>");
