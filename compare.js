@@ -128,13 +128,24 @@ $(document).ready(function () {
             const details1 = data1[0] || {};
             const details2 = data2[0] || {};
             
-            const score1 = calculateSportinessScore(details1);
-            const score2 = calculateSportinessScore(details2);
-            
-            $("#score-results").html(`
-                <h2>Sportiness Scores</h2>
-                <p>${details1.model_name || "Unknown"}: <strong>${score1.toFixed(1)}</strong>/100</p>
-                <p>${details2.model_name || "Unknown"}: <strong>${score2.toFixed(1)}</strong>/100</p>
+            $("#comparison-results").html(`
+                <h2>Comparison Results</h2>
+                <table border="1">
+                    <tr><th>Feature</th><th>${details1.model_name || "N/A"}</th><th>${details2.model_name || "N/A"}</th></tr>
+                    <tr><td>Make</td><td>${details1.make_display || "N/A"} (${details1.make_country || "N/A"})</td><td>${details2.make_display || "N/A"} (${details2.make_country || "N/A"})</td></tr>
+                    <tr><td>Engine</td><td>${details1.model_engine_cc || "N/A"}cc (${details1.model_engine_l || "N/A"} l), ${details1.model_engine_power_hp || "N/A"} HP, ${details1.model_engine_type || "N/A"} ${details1.model_engine_cyl || "N/A"}</td><td>${details2.model_engine_cc || "N/A"}cc (${details2.model_engine_l || "N/A"} l), ${details2.model_engine_power_hp || "N/A"} HP, ${details2.model_engine_type || "N/A"} ${details2.model_engine_cyl || "N/A"}</td></tr>
+                    <tr><td>Torque</td><td>${details1.model_engine_torque_nm || "N/A"} Nm</td><td>${details2.model_engine_torque_nm || "N/A"} Nm</td></tr>
+                    <tr><td>Engine Position</td><td>${details1.model_engine_position || "N/A"}</td><td>${details2.model_engine_position || "N/A"}</td></tr>
+                    <tr><td>Transmission</td><td>${details1.model_transmission_type || "N/A"}</td><td>${details2.model_transmission_type || "N/A"}</td></tr>
+                    <tr><td>Drive</td><td>${details1.model_drive || "N/A"}</td><td>${details2.model_drive || "N/A"}</td></tr>
+                    <tr><td>Top Speed</td><td>${details1.model_top_speed_kph || "N/A"} km/h</td><td>${details2.model_top_speed_kph || "N/A"} km/h</td></tr>
+                    <tr><td>0 - 100 km/h</td><td>${details1.model_0_to_100_kph || "N/A"} s</td><td>${details2.model_0_to_100_kph || "N/A"} s</td></tr>
+                    <tr><td>Fuel Type</td><td>${details1.model_engine_fuel || "N/A"}</td><td>${details2.model_engine_fuel || "N/A"}</td></tr>
+                    <tr><td>Fuel Efficiency</td><td>${details1.model_lkm_hwy || "N/A"} L/100km (Highway), ${details1.model_lkm_city || "N/A"} L/100km (City), ${details1.model_lkm_mixed || "N/A"} L/100km (Mixed)</td><td>${details2.model_lkm_hwy || "N/A"} L/100km (Highway), ${details2.model_lkm_city || "N/A"} L/100km (City), ${details2.model_lkm_mixed || "N/A"} L/100km (Mixed)</td></tr>
+                    <tr><td>Dimensions</td><td>Length: ${details1.model_length_mm || "N/A"} cm, Width: ${details1.model_width_mm || "N/A"} cm, Height: ${details1.model_height_mm || "N/A"} cm</td><td>Length: ${details2.model_length_mm || "N/A"} cm, Width: ${details2.model_width_mm || "N/A"} cm, Height: ${details2.model_height_mm || "N/A"} cm</td></tr>
+                    <tr><td>Weight</td><td>${details1.model_weight_kg || "N/A"} kg</td><td>${details2.model_weight_kg || "N/A"} kg</td></tr>
+                    <tr><td>Fuel Capacity</td><td>${details1.model_fuel_cap_l || "N/A"} L</td><td>${details2.model_fuel_cap_l || "N/A"} L</td></tr>
+                </table>
             `);
         }).catch(() => {
             $("#score-results").html("<p>Error retrieving scoring data.</p>");
