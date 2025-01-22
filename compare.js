@@ -89,28 +89,54 @@ $(document).ready(function () {
             }
         });
     }
-
     const calculateSportyScore = (car) => {
-    let score = 0;
-    // HP
-    if (car.model_engine_power_hp) score += car.model_engine_power_hp * 2;
-    // Torque
-    if (car.model_engine_torque_nm) score += car.model_engine_torque_nm / 10;
-    // Engine capacity (liters)
-    if (car.model_engine_l) score += car.model_engine_l * 50;
-    // Cylinders
-    if (car.model_engine_cyl) score += car.model_engine_cyl * 10;
-    // Acceleration (0-100): lower is better
-    if (car.model_0_to_100_kph) score += Math.max(0, 10 - car.model_0_to_100_kph) * 20;
-    // Drive type
-    if (car.model_drive.includes("Rear") || car.model_drive.includes("AWD") || car.model_drive.includes("4WD")) score += 50;
-    if (car.model_transmission_type.includes("Manual")) score += 25;
-    if (car.model_engine_rpm > 7000) score += 30;
-    // Engine position influence
-    if (car.model_engine_position.toLowerCase().includes("Middle")) score += 40;
-    else if (car.model_engine_position.toLowerCase().includes("Rear")) score += 20;
-    return Math.min(score, 1000);
-};
+        let score = 0;
+
+        // Horsepower (max ~1500 HP)
+        const hp = car.model_engine_power_hp || 0;
+        score += Math.min((hp / 1500) * 300, 300);
+
+        // Torque (max ~1500 Nm)
+        const torque = car.model_engine_torque_nm || 0;
+        score += Math.min((torque / 1500) * 200, 200);
+
+        // Engine capacity (assume up to ~8L for supercars)
+        const cap = car.model_engine_l || 0;
+        const fuel = (car.model_engine_fuel || "").toLowerCase();
+        if (fuel.includes("electric")) score += 150;
+        score += Math.min((cap / 8) * 150, 150);
+
+        // Acceleration (0-100)
+        const accel = car.model_0_to_100_kph || 0;
+        const accelRatio = accel > 0 ? Math.max(0, (10 - accel) / 8) : 0;
+        score += 150 * accelRatio;
+
+        // Top Speed (max ~450 kph)
+        const topSpeed = car.model_top_speed_kph || 0;
+        score += Math.min((topSpeed / 450) * 100, 100);
+
+        // Drive
+        const drive = car.model_drive?.toLowerCase() || "";
+        if (drive.includes("rear")) score += 30;
+        if (drive.includes("awd") || drive.includes("4wd")) score += 35;
+
+        // Transmission
+        if ((car.model_transmission_type || "").toLowerCase().includes("manual")) score += 20;
+
+        // High redline
+        if ((car.model_engine_rpm || 0) > 7000) score += 25;
+
+        // Engine position
+        const pos = (car.model_engine_position || "").toLowerCase();
+        if (pos.includes("middle")) score += 25;
+        else if (pos.includes("rear")) score += 20;
+        
+        // Fuel
+        if (fuel.includes("gasoline") || fuel.includes("unleaded") || fuel.includes("premium")) score += 20;
+    
+
+        return Math.min(Math.round(score), 1000);
+    };
 
     $("#compare-btn").on("click", function () {
         const trim1 = $("#trim-1").val();
