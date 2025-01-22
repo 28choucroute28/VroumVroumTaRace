@@ -24,6 +24,7 @@ jobs:
         run: |
           npm install
           npx playwright install
+          npx playwright install-deps
 
       # Construire l'image Docker
       - name: Build Docker image
