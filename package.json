@@ -2,7 +2,9 @@
   "name": "vroumvroumtarace",
   "version": "1.0.0",
   "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.7",
     "playwright": "^1.18.0"
-  }
+  },
+  "scripts": {}
 }
-
