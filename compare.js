@@ -90,28 +90,6 @@ $(document).ready(function () {
         });
     }
 
-    function calculateSportinessScore(details) {
-        let score = 0;
-        const power = details.model_engine_power_hp || 0;
-        const weight = details.model_weight_kg || 0;
-        const acceleration = details.model_0_to_100_kph || 0;
-        const topSpeed = details.model_top_speed_kph || 0;
-        const drive = details.model_drive || "";
-        const transmission = details.model_transmission_type || "";
-        const rpm = details.model_engine_rpm || 0;
-        
-        const pwr = (weight > 0) ? (power / weight) * 1000 : 0;
-        const normPWR = Math.min((pwr / 0.2) * 30, 30);
-        const normAcceleration = (acceleration > 0) ? Math.min((10 / acceleration) * 25, 25) : 0;
-        const normTopSpeed = Math.min((topSpeed / 350) * 20, 20);
-        
-        score += normPWR + normAcceleration + normTopSpeed;
-        if (drive.includes("RWD") || drive.includes("AWD")) score += 5;
-        if (transmission.includes("Manual")) score += 3;
-        if (rpm > 7000) score += 3;
-        return Math.min(score, 100);
-    }
-
     const calculateSportyScore = (car) => {
     let score = 0;
     // HP
@@ -125,9 +103,13 @@ $(document).ready(function () {
     // Acceleration (0-100): lower is better
     if (car.model_0_to_100_kph) score += Math.max(0, 10 - car.model_0_to_100_kph) * 20;
     // Drive type
-    if (car.model_drive && car.model_drive.toLowerCase().includes('rwd')) score += 50;
-    else if (car.model_drive && car.model_drive.toLowerCase().includes('fwd')) score += 25;
-    return Math.round(score);
+    if (car.model_drive.includes("Rear") || car.model_drive.includes("AWD") || car.model_drive.includes("4WD")) score += 50;
+    if (car.model_transmission_type.includes("Manual")) score += 25;
+    if (car.model_engine_rpm > 7000) score += 30;
+    // Engine position influence
+    if (car.model_engine_position.toLowerCase().includes("Middle")) score += 40;
+    else if (car.model_engine_position.toLowerCase().includes("Rear")) score += 20;
+    return Math.min(score, 1000);
 };
 
     $("#compare-btn").on("click", function () {
