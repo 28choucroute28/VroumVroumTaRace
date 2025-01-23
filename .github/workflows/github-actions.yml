@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npx playwright install chronium
+          npx playwright install firefox
 
       # Construire l'image Docker
       - name: Build Docker image
