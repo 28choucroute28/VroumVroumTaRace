@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { chromium } = require('playwright'); // Assurez-vous que seul chromium est importé
 
 test('Comparaison de deux véhicules sur la page compare.html', async ({ page }) => {
   // 1. Aller sur la page de comparaison
