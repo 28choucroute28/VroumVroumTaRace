@@ -64,9 +64,9 @@ jobs:
       # Taguer l'image Docker avec le tag manuel
       - name: Tag Docker image with manual version
         run: |
-          docker tag myapp:latest ${{ secrets.DOCKER_USERNAME }}/VroomVroomTaRace:${{ env.VERSION }}
+          docker tag myapp:latest ${{ secrets.DOCKER_USERNAME }}/vroomvroomtarace:${{ env.VERSION }}
 
       # Pousser l'image Docker vers Docker Hub avec le tag
       - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/VroomVroomTaRace:${{ env.VERSION }}
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/vroomvroomtarace:${{ env.VERSION }}
 
