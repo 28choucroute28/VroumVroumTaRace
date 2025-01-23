@@ -127,3 +127,40 @@ select {
 .vehicle-details-updated {
     transform: scale(1.05);
 }
+/* Comparison table styles */
+#comparison-results table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 1em;
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0px 0px 10px rgba(255, 115, 0, 0.5);
+}
+
+#comparison-results table th,
+#comparison-results table td {
+    padding: 10px 15px;
+    text-align: center;
+    color: #f0f0f0;
+    border: 1px solid #333;
+}
+
+#comparison-results table th {
+    background-color: #ff7300;
+    color: #1e1e1e;
+    font-weight: bold;
+}
+
+#comparison-results table tr:nth-child(even) {
+    background-color: #2a2a2a;
+}
+
+#comparison-results table tr:nth-child(odd) {
+    background-color: #1e1e1e;
+}
+
+#comparison-results table tr:hover {
+    background-color: #333;
+}
