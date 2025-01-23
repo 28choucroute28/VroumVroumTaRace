@@ -39,7 +39,7 @@ jobs:
       # Exécuter les tests Playwright
       - name: Run Playwright tests
         run: |
-          npx playwright test tests/formInteraction.test.js
+          npx playwright test tests/firstest.test.js tests/comparetest.test.js
 
       # Arrêter le conteneur après les tests
       - name: Stop Docker container
