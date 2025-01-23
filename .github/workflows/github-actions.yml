@@ -3,7 +3,7 @@ name: CI for Dockerfile with Playwright Tests
 on:
   push:
     branches:
-      - trunk  # Exécuter uniquement sur la branche `trunk`
+      - trunck  # Exécuter uniquement sur la branche `trunck`
 
 jobs:
   docker-build-test-and-push:
